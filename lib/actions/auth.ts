@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { isValidPhone } from "@/lib/validations/phone";
 
@@ -47,6 +48,43 @@ export async function loginAction(
   redirect(getRedirectPath(formData));
 }
 
+function isDuplicateUserError(message: string) {
+  const normalized = message.toLowerCase();
+
+  return (
+    normalized.includes("already") ||
+    normalized.includes("registered") ||
+    normalized.includes("exists")
+  );
+}
+
+async function signInAfterSignup(
+  email: string,
+  password: string,
+  formData: FormData,
+): Promise<AuthState> {
+  const supabase = await createClient();
+  const { error: loginError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (!loginError) {
+    redirect(getRedirectPath(formData));
+  }
+
+  if (loginError.message.toLowerCase().includes("confirm")) {
+    return {
+      error:
+        "Tu cuenta existe pero aún no está activa. Prueba con otro correo o contacta al administrador.",
+    };
+  }
+
+  return {
+    error: "Ya existe una cuenta con este correo. Prueba iniciar sesión.",
+  };
+}
+
 export async function signupAction(
   _prevState: AuthState,
   formData: FormData,
@@ -72,38 +110,43 @@ export async function signupAction(
     return { error: "La contraseña debe tener al menos 6 caracteres." };
   }
 
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({
-    email: email.trim(),
-    password,
-    options: {
-      data: {
-        name: name.trim(),
-        phone: phone.trim(),
-      },
-    },
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  if (data.session) {
-    redirect(getRedirectPath(formData));
-  }
-
-  const { error: loginError } = await supabase.auth.signInWithPassword({
-    email: email.trim(),
-    password,
-  });
-
-  if (!loginError) {
-    redirect(getRedirectPath(formData));
-  }
-
-  return {
-    error: "Cuenta creada, pero no se pudo iniciar sesión. Intenta entrar manualmente.",
+  const trimmedEmail = email.trim();
+  const metadata = {
+    name: name.trim(),
+    phone: phone.trim(),
   };
+
+  const admin = createAdminClient();
+  const { error: createError } = await admin.auth.admin.createUser({
+    email: trimmedEmail,
+    password,
+    email_confirm: true,
+    user_metadata: metadata,
+  });
+
+  if (createError) {
+    if (!isDuplicateUserError(createError.message)) {
+      return { error: createError.message };
+    }
+
+    const supabase = await createClient();
+    const { data: signUpData } = await supabase.auth.signUp({
+      email: trimmedEmail,
+      password,
+      options: { data: metadata },
+    });
+
+    if (signUpData.user?.id) {
+      await admin.auth.admin.updateUserById(signUpData.user.id, {
+        email_confirm: true,
+        user_metadata: metadata,
+      });
+    }
+
+    return signInAfterSignup(trimmedEmail, password, formData);
+  }
+
+  return signInAfterSignup(trimmedEmail, password, formData);
 }
 
 export async function logoutAction() {
