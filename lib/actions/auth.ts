@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { getAppUrl } from "@/lib/config/app-url";
+import { buildAuthCallbackUrl } from "@/lib/config/app-url";
 import { createClient } from "@/lib/supabase/server";
 import { isValidPhone } from "@/lib/validations/phone";
 
@@ -93,7 +93,7 @@ export async function signupAction(
   const trimmedEmail = email.trim();
   const redirectPath = getRedirectPath(formData);
   const supabase = await createClient();
-  const appUrl = await getAppUrl();
+  const emailRedirectTo = await buildAuthCallbackUrl(redirectPath);
 
   const { data, error } = await supabase.auth.signUp({
     email: trimmedEmail,
@@ -103,7 +103,7 @@ export async function signupAction(
         name: name.trim(),
         phone: phone.trim(),
       },
-      emailRedirectTo: `${appUrl}/auth/callback?next=${encodeURIComponent(redirectPath)}`,
+      emailRedirectTo,
     },
   });
 
