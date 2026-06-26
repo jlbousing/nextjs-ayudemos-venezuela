@@ -9,6 +9,7 @@ import {
   joinInitiativeAsVolunteer,
   updateInitiative,
 } from "@/lib/data/initiatives";
+import { notifyCreatorVolunteerJoined } from "@/lib/notifications/volunteer-joined";
 import type {
   CreateInitiativeInput,
   InitiativeStatus,
@@ -157,6 +158,17 @@ export async function joinVolunteerAction(
 
     if (result.alreadyJoined) {
       return { alreadyJoined: true };
+    }
+
+    try {
+      await notifyCreatorVolunteerJoined(initiativeId, {
+        id: profile.id,
+        nombre: profile.name,
+        email: profile.email,
+        telefono: profile.phone,
+      });
+    } catch (error) {
+      console.error("No se pudo enviar la notificación al creador:", error);
     }
 
     return { success: true };

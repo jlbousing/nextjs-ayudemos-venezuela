@@ -92,9 +92,17 @@ export async function signupAction(
     redirect(getRedirectPath(formData));
   }
 
+  const { error: loginError } = await supabase.auth.signInWithPassword({
+    email: email.trim(),
+    password,
+  });
+
+  if (!loginError) {
+    redirect(getRedirectPath(formData));
+  }
+
   return {
-    success:
-      "Cuenta creada. Revisa tu correo para confirmar el registro e inicia sesión.",
+    error: "Cuenta creada, pero no se pudo iniciar sesión. Intenta entrar manualmente.",
   };
 }
 
