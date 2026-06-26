@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import { signupAction, type AuthState } from "@/lib/actions/auth";
 import {
   Button,
+  ButtonLink,
   Field,
   FormMessage,
   Input,
@@ -17,11 +18,59 @@ type SignupFormProps = {
 
 const initialState: AuthState = {};
 
+function SignupConfirmationNotice({
+  email,
+  redirectTo,
+}: {
+  email: string;
+  redirectTo: string;
+}) {
+  return (
+    <Card className="flex flex-col gap-5">
+      <div className="flex flex-col gap-2">
+        <p className="text-lg font-semibold text-neutral-900">
+          Revisa tu correo para activar tu cuenta
+        </p>
+        <p className="text-sm text-neutral-600">
+          Enviamos un enlace de confirmación a{" "}
+          <span className="font-medium text-neutral-900">{email}</span>.
+        </p>
+      </div>
+
+      <ol className="list-decimal space-y-2 pl-5 text-sm text-neutral-700">
+        <li>Abre tu bandeja de entrada y busca un correo de Ayudemos Venezuela.</li>
+        <li>Haz clic en el enlace de confirmación del mensaje.</li>
+        <li>Cuando se abra la página, ya podrás iniciar sesión con tu correo y contraseña.</li>
+      </ol>
+
+      <FormMessage>
+        Si no ves el correo en unos minutos, revisa la carpeta de spam o promociones.
+      </FormMessage>
+
+      <ButtonLink
+        href={`/iniciar-sesion?redirect=${encodeURIComponent(redirectTo)}`}
+        className="w-full"
+      >
+        Ir a iniciar sesión
+      </ButtonLink>
+    </Card>
+  );
+}
+
 export function SignupForm({ redirectTo = "/iniciativas" }: SignupFormProps) {
   const [state, formAction, isPending] = useActionState(
     signupAction,
     initialState,
   );
+
+  if (state.pendingEmailConfirmation && state.registeredEmail) {
+    return (
+      <SignupConfirmationNotice
+        email={state.registeredEmail}
+        redirectTo={redirectTo}
+      />
+    );
+  }
 
   return (
     <Card>
@@ -76,7 +125,6 @@ export function SignupForm({ redirectTo = "/iniciativas" }: SignupFormProps) {
         </Field>
 
         {state.error ? <FormMessage tone="error">{state.error}</FormMessage> : null}
-        {state.success ? <FormMessage tone="success">{state.success}</FormMessage> : null}
 
         <Button type="submit" fullWidth disabled={isPending}>
           {isPending ? "Procesando..." : "Crear cuenta"}

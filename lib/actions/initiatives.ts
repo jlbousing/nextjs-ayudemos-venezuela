@@ -122,6 +122,7 @@ export async function updateInitiativeAction(
   try {
     await updateInitiative(initiativeId, profile.id, input);
     revalidatePath("/iniciativas");
+    revalidatePath(`/iniciativas/${initiativeId}`);
     revalidatePath(`/iniciativas/${initiativeId}/admin`);
     return { success: true };
   } catch {
@@ -154,6 +155,7 @@ export async function joinVolunteerAction(
     });
 
     revalidatePath("/iniciativas");
+    revalidatePath(`/iniciativas/${initiativeId}`);
     revalidatePath(`/iniciativas/${initiativeId}/admin`);
 
     if (result.alreadyJoined) {

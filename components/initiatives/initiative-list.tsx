@@ -32,11 +32,16 @@ export function InitiativeList({
               <div className="flex flex-col gap-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-lg font-semibold text-neutral-900">
-                    {initiative.titulo}
+                    <Link
+                      href={`/iniciativas/${initiative.id}`}
+                      className="transition-colors hover:text-neutral-600"
+                    >
+                      {initiative.titulo}
+                    </Link>
                   </h2>
                   <Badge>{INITIATIVE_STATUS_LABELS[initiative.status]}</Badge>
                 </div>
-                <p className="text-sm leading-6 text-neutral-600">
+                <p className="text-sm leading-6 text-neutral-600 line-clamp-3">
                   {initiative.descripcion}
                 </p>
               </div>
@@ -66,6 +71,10 @@ export function InitiativeList({
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
+                <ButtonLink href={`/iniciativas/${initiative.id}`} variant="ghost">
+                  Ver detalle
+                </ButtonLink>
+
                 {isCreator ? (
                   <ButtonLink href={`/iniciativas/${initiative.id}/admin`}>
                     Administrar
@@ -80,7 +89,7 @@ export function InitiativeList({
                     />
                   ) : (
                     <Link
-                      href="/iniciar-sesion?redirect=/iniciativas"
+                      href={`/iniciar-sesion?redirect=${encodeURIComponent(`/iniciativas/${initiative.id}`)}`}
                       className="text-sm text-neutral-600 underline decoration-neutral-300 underline-offset-4 hover:text-neutral-900"
                     >
                       Inicia sesión para unirte

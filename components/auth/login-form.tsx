@@ -52,7 +52,12 @@ export function LoginForm({ redirectTo = "/iniciativas" }: LoginFormProps) {
         </Field>
 
         {state.error ? <FormMessage tone="error">{state.error}</FormMessage> : null}
-        {state.success ? <FormMessage tone="success">{state.success}</FormMessage> : null}
+        {state.pendingEmailConfirmation && state.registeredEmail ? (
+          <FormMessage>
+            ¿Ya confirmaste? Vuelve a intentar iniciar sesión con{" "}
+            <span className="font-medium">{state.registeredEmail}</span>.
+          </FormMessage>
+        ) : null}
 
         <Button type="submit" fullWidth disabled={isPending}>
           {isPending ? "Procesando..." : "Iniciar sesión"}

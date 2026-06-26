@@ -1,13 +1,15 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { getAppUrl } from "@/lib/config/app-url";
 import { createClient } from "@/lib/supabase/server";
 import { isValidPhone } from "@/lib/validations/phone";
 
 export type AuthState = {
   error?: string;
   success?: string;
+  pendingEmailConfirmation?: boolean;
+  registeredEmail?: string;
 };
 
 function getRedirectPath(formData: FormData) {
@@ -18,6 +20,12 @@ function getRedirectPath(formData: FormData) {
   }
 
   return "/iniciativas";
+}
+
+function isEmailNotConfirmedError(message: string) {
+  const normalized = message.toLowerCase();
+
+  return normalized.includes("confirm") || normalized.includes("verified");
 }
 
 export async function loginAction(
@@ -42,47 +50,19 @@ export async function loginAction(
   });
 
   if (error) {
+    if (isEmailNotConfirmedError(error.message)) {
+      return {
+        error:
+          "Aún no has confirmado tu correo. Revisa tu bandeja de entrada (y la carpeta de spam) y haz clic en el enlace que te enviamos.",
+        pendingEmailConfirmation: true,
+        registeredEmail: email.trim(),
+      };
+    }
+
     return { error: "Correo o contraseña incorrectos." };
   }
 
   redirect(getRedirectPath(formData));
-}
-
-function isDuplicateUserError(message: string) {
-  const normalized = message.toLowerCase();
-
-  return (
-    normalized.includes("already") ||
-    normalized.includes("registered") ||
-    normalized.includes("exists")
-  );
-}
-
-async function signInAfterSignup(
-  email: string,
-  password: string,
-  formData: FormData,
-): Promise<AuthState> {
-  const supabase = await createClient();
-  const { error: loginError } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (!loginError) {
-    redirect(getRedirectPath(formData));
-  }
-
-  if (loginError.message.toLowerCase().includes("confirm")) {
-    return {
-      error:
-        "Tu cuenta existe pero aún no está activa. Prueba con otro correo o contacta al administrador.",
-    };
-  }
-
-  return {
-    error: "Ya existe una cuenta con este correo. Prueba iniciar sesión.",
-  };
 }
 
 export async function signupAction(
@@ -111,42 +91,34 @@ export async function signupAction(
   }
 
   const trimmedEmail = email.trim();
-  const metadata = {
-    name: name.trim(),
-    phone: phone.trim(),
-  };
+  const redirectPath = getRedirectPath(formData);
+  const supabase = await createClient();
+  const appUrl = await getAppUrl();
 
-  const admin = createAdminClient();
-  const { error: createError } = await admin.auth.admin.createUser({
+  const { data, error } = await supabase.auth.signUp({
     email: trimmedEmail,
     password,
-    email_confirm: true,
-    user_metadata: metadata,
+    options: {
+      data: {
+        name: name.trim(),
+        phone: phone.trim(),
+      },
+      emailRedirectTo: `${appUrl}/auth/callback?next=${encodeURIComponent(redirectPath)}`,
+    },
   });
 
-  if (createError) {
-    if (!isDuplicateUserError(createError.message)) {
-      return { error: createError.message };
-    }
-
-    const supabase = await createClient();
-    const { data: signUpData } = await supabase.auth.signUp({
-      email: trimmedEmail,
-      password,
-      options: { data: metadata },
-    });
-
-    if (signUpData.user?.id) {
-      await admin.auth.admin.updateUserById(signUpData.user.id, {
-        email_confirm: true,
-        user_metadata: metadata,
-      });
-    }
-
-    return signInAfterSignup(trimmedEmail, password, formData);
+  if (error) {
+    return { error: error.message };
   }
 
-  return signInAfterSignup(trimmedEmail, password, formData);
+  if (data.session) {
+    redirect(redirectPath);
+  }
+
+  return {
+    pendingEmailConfirmation: true,
+    registeredEmail: trimmedEmail,
+  };
 }
 
 export async function logoutAction() {

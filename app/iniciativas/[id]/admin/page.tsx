@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { InitiativeAdminForm } from "@/components/initiatives/initiative-admin-form";
 import { DeleteInitiativeButton } from "@/components/initiatives/delete-initiative-button";
 import { VolunteersContactList } from "@/components/initiatives/volunteers-contact-list";
-import { FormMessage } from "@/components/ui/form";
+import { FormMessage, ButtonLink } from "@/components/ui/form";
 import { Badge, PageHeader, PageShell, Section } from "@/components/ui/layout";
 import { getCurrentProfile } from "@/lib/auth/session";
 import { getInitiativeForCreator } from "@/lib/data/initiatives";
@@ -39,7 +39,11 @@ export default async function InitiativeAdminPage({
         title={initiative.titulo}
         description="Administra tu iniciativa y contacta a los voluntarios."
         badge={<Badge>{INITIATIVE_STATUS_LABELS[initiative.status]}</Badge>}
-      />
+      >
+        <ButtonLink href={`/iniciativas/${initiative.id}`} variant="secondary">
+          Ver página pública
+        </ButtonLink>
+      </PageHeader>
 
       <Section title="Editar iniciativa">
         <InitiativeAdminForm initiative={initiative} />
