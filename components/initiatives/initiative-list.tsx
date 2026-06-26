@@ -23,6 +23,7 @@ export function InitiativeList({
   return (
     <ul className="flex w-full max-w-2xl flex-col gap-4">
       {initiatives.map((initiative) => {
+        const isCreator = initiative.createdBy === currentUserId;
         const isJoined = initiative.voluntarios.some(
           (voluntario) => voluntario.id === currentUserId,
         );
@@ -48,27 +49,38 @@ export function InitiativeList({
                 <ul className="mt-2 flex flex-col gap-1">
                   {initiative.voluntarios.map((voluntario) => (
                     <li key={voluntario.id} className="text-sm">
-                      {voluntario.nombre} ({voluntario.email})
+                      {voluntario.nombre}
                     </li>
                   ))}
                 </ul>
               )}
             </div>
 
-            <div className="mt-4 border-t border-black pt-4">
-              {isAuthenticated ? (
-                <JoinVolunteerButton
-                  initiativeId={initiative.id}
-                  isJoined={isJoined}
-                />
-              ) : (
+            <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-black pt-4">
+              {isCreator ? (
                 <Link
-                  href="/iniciar-sesion?redirect=/iniciativas"
-                  className="text-sm underline"
+                  href={`/iniciativas/${initiative.id}/admin`}
+                  className="border border-black px-4 py-1.5 text-sm"
                 >
-                  Inicia sesión para unirte como voluntario
+                  Administrar
                 </Link>
-              )}
+              ) : null}
+
+              {!isCreator ? (
+                isAuthenticated ? (
+                  <JoinVolunteerButton
+                    initiativeId={initiative.id}
+                    isJoined={isJoined}
+                  />
+                ) : (
+                  <Link
+                    href="/iniciar-sesion?redirect=/iniciativas"
+                    className="text-sm underline"
+                  >
+                    Inicia sesión para unirte como voluntario
+                  </Link>
+                )
+              ) : null}
             </div>
           </li>
         );

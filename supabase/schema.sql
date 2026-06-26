@@ -8,6 +8,7 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   name text not null,
   email text not null unique,
+  phone text not null,
   created_at timestamptz not null default now()
 );
 
@@ -41,11 +42,12 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id, name, email)
+  insert into public.profiles (id, name, email, phone)
   values (
     new.id,
     coalesce(new.raw_user_meta_data ->> 'name', split_part(new.email, '@', 1)),
-    new.email
+    new.email,
+    coalesce(new.raw_user_meta_data ->> 'phone', '')
   );
   return new;
 end;
@@ -103,6 +105,10 @@ create policy "Creators can assign volunteers"
         and i.created_by = auth.uid()
     )
   );
+
+create policy "Volunteers can join initiatives"
+  on public.initiative_volunteers for insert
+  with check (auth.uid() = volunteer_id);
 
 create policy "Volunteers can leave or creators can remove them"
   on public.initiative_volunteers for delete

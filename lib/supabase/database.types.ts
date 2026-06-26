@@ -14,18 +14,21 @@ export type Database = {
           id: string;
           name: string;
           email: string;
+          phone: string;
           created_at: string;
         };
         Insert: {
           id: string;
           name: string;
           email: string;
+          phone: string;
           created_at?: string;
         };
         Update: {
           id?: string;
           name?: string;
           email?: string;
+          phone?: string;
           created_at?: string;
         };
         Relationships: [];

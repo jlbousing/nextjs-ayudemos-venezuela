@@ -19,7 +19,7 @@ export async function getCurrentProfile() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("id, name, email")
+    .select("id, name, email, phone")
     .eq("id", user.id)
     .single();
 
@@ -31,5 +31,6 @@ export async function getCurrentProfile() {
     id: user.id,
     name: (user.user_metadata?.name as string | undefined) ?? user.email ?? "",
     email: user.email ?? "",
+    phone: (user.user_metadata?.phone as string | undefined) ?? "",
   };
 }

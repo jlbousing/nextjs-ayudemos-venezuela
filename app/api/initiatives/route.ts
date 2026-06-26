@@ -1,25 +1,12 @@
+import { getSessionUser } from "@/lib/auth/session";
 import { createInitiative, getInitiatives } from "@/lib/data/initiatives";
 import { errorResponse, jsonResponse } from "@/lib/api/response";
 import type { InitiativeStatus } from "@/lib/types/initiative";
-import type { Voluntario } from "@/lib/types/user";
 
 const VALID_STATUSES: InitiativeStatus[] = ["pending", "process", "completed"];
 
 function isValidStatus(value: unknown): value is InitiativeStatus {
   return typeof value === "string" && VALID_STATUSES.includes(value as InitiativeStatus);
-}
-
-function isValidVoluntarios(value: unknown): value is Voluntario[] {
-  if (!Array.isArray(value)) return false;
-
-  return value.every(
-    (item) =>
-      typeof item === "object" &&
-      item !== null &&
-      typeof item.id === "string" &&
-      typeof item.nombre === "string" &&
-      typeof item.email === "string",
-  );
 }
 
 export async function GET() {
@@ -29,6 +16,12 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const user = await getSessionUser();
+
+    if (!user) {
+      return errorResponse("Debes iniciar sesión.", 401);
+    }
+
     const body = await request.json();
 
     if (
@@ -42,16 +35,14 @@ export async function POST(request: Request) {
       return errorResponse("status debe ser pending, process o completed.");
     }
 
-    if (body.voluntarios !== undefined && !isValidVoluntarios(body.voluntarios)) {
-      return errorResponse("voluntarios debe ser un array de usuarios válidos.");
-    }
-
-    const initiative = await createInitiative({
-      titulo: body.titulo,
-      descripcion: body.descripcion,
-      status: body.status,
-      voluntarios: body.voluntarios,
-    });
+    const initiative = await createInitiative(
+      {
+        titulo: body.titulo,
+        descripcion: body.descripcion,
+        status: body.status,
+      },
+      user.id,
+    );
 
     return jsonResponse({ initiative }, 201);
   } catch {

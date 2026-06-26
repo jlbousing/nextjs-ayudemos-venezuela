@@ -37,6 +37,22 @@ export function SignupForm({ redirectTo = "/iniciativas" }: SignupFormProps) {
       </div>
 
       <div className="flex flex-col gap-1">
+        <label htmlFor="phone" className="text-sm font-medium">
+          Teléfono
+        </label>
+        <input
+          id="phone"
+          name="phone"
+          type="tel"
+          required
+          minLength={10}
+          autoComplete="tel"
+          className="border border-black bg-white px-3 py-2 text-sm"
+          placeholder="Ej. 04141234567"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
         <label htmlFor="email" className="text-sm font-medium">
           Correo
         </label>

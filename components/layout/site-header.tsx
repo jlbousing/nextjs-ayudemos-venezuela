@@ -19,7 +19,9 @@ export async function SiteHeader() {
 
           {profile ? (
             <>
-              <span>{profile.name}</span>
+              <Link href="/perfil" className="underline">
+                {profile.name}
+              </Link>
               <form action={logoutAction}>
                 <button type="submit" className="underline">
                   Cerrar sesión

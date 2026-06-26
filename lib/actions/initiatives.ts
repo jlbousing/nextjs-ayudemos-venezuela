@@ -5,14 +5,22 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth/session";
 import {
   createInitiative,
+  deleteInitiative,
   joinInitiativeAsVolunteer,
+  updateInitiative,
 } from "@/lib/data/initiatives";
 import type {
   CreateInitiativeInput,
   InitiativeStatus,
+  UpdateInitiativeInput,
 } from "@/lib/types/initiative";
 
 export type CreateInitiativeState = {
+  error?: string;
+  success?: boolean;
+};
+
+export type UpdateInitiativeState = {
   error?: string;
   success?: boolean;
 };
@@ -59,13 +67,65 @@ export async function createInitiativeAction(
     titulo: titulo.trim(),
     descripcion: descripcion.trim(),
     status,
-    voluntarios: [],
   };
 
-  await createInitiative(input);
-  revalidatePath("/iniciativas");
+  let initiative;
 
-  return { success: true };
+  try {
+    initiative = await createInitiative(input, profile.id);
+  } catch {
+    return { error: "No se pudo crear la iniciativa." };
+  }
+
+  revalidatePath("/iniciativas");
+  redirect(`/iniciativas/${initiative.id}/admin`);
+}
+
+export async function updateInitiativeAction(
+  _prevState: UpdateInitiativeState,
+  formData: FormData,
+): Promise<UpdateInitiativeState> {
+  const profile = await getCurrentProfile();
+
+  if (!profile) {
+    redirect("/iniciar-sesion?redirect=/iniciativas");
+  }
+
+  const initiativeId = formData.get("initiativeId");
+  const titulo = formData.get("titulo");
+  const descripcion = formData.get("descripcion");
+  const status = formData.get("status");
+
+  if (typeof initiativeId !== "string" || !initiativeId) {
+    return { error: "Iniciativa no válida." };
+  }
+
+  if (typeof titulo !== "string" || titulo.trim().length < 3) {
+    return { error: "El título debe tener al menos 3 caracteres." };
+  }
+
+  if (typeof descripcion !== "string" || descripcion.trim().length < 10) {
+    return { error: "La descripción debe tener al menos 10 caracteres." };
+  }
+
+  if (typeof status !== "string" || !isValidStatus(status)) {
+    return { error: "El estado seleccionado no es válido." };
+  }
+
+  const input: UpdateInitiativeInput = {
+    titulo: titulo.trim(),
+    descripcion: descripcion.trim(),
+    status,
+  };
+
+  try {
+    await updateInitiative(initiativeId, profile.id, input);
+    revalidatePath("/iniciativas");
+    revalidatePath(`/iniciativas/${initiativeId}/admin`);
+    return { success: true };
+  } catch {
+    return { error: "No se pudo actualizar la iniciativa." };
+  }
 }
 
 export async function joinVolunteerAction(
@@ -84,17 +144,46 @@ export async function joinVolunteerAction(
     return { error: "Iniciativa no válida." };
   }
 
-  const result = await joinInitiativeAsVolunteer(initiativeId, {
-    id: profile.id,
-    nombre: profile.name,
-    email: profile.email,
-  });
+  try {
+    const result = await joinInitiativeAsVolunteer(initiativeId, {
+      id: profile.id,
+      nombre: profile.name,
+      email: profile.email,
+      telefono: profile.phone,
+    });
 
-  revalidatePath("/iniciativas");
+    revalidatePath("/iniciativas");
+    revalidatePath(`/iniciativas/${initiativeId}/admin`);
 
-  if (result.alreadyJoined) {
-    return { alreadyJoined: true };
+    if (result.alreadyJoined) {
+      return { alreadyJoined: true };
+    }
+
+    return { success: true };
+  } catch {
+    return { error: "No se pudo unir a la iniciativa." };
+  }
+}
+
+export async function deleteInitiativeAction(formData: FormData) {
+  const profile = await getCurrentProfile();
+
+  if (!profile) {
+    redirect("/iniciar-sesion?redirect=/iniciativas");
   }
 
-  return { success: true };
+  const initiativeId = formData.get("initiativeId");
+
+  if (typeof initiativeId !== "string" || !initiativeId) {
+    redirect("/iniciativas");
+  }
+
+  try {
+    await deleteInitiative(initiativeId, profile.id);
+  } catch {
+    redirect(`/iniciativas/${initiativeId}/admin?error=delete`);
+  }
+
+  revalidatePath("/iniciativas");
+  redirect("/iniciativas");
 }

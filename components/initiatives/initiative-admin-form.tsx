@@ -2,21 +2,30 @@
 
 import { useActionState } from "react";
 import {
-  createInitiativeAction,
-  type CreateInitiativeState,
+  updateInitiativeAction,
+  type UpdateInitiativeState,
 } from "@/lib/actions/initiatives";
-import { INITIATIVE_STATUS_LABELS } from "@/lib/types/initiative";
+import {
+  INITIATIVE_STATUS_LABELS,
+  type Initiative,
+} from "@/lib/types/initiative";
 
-const initialState: CreateInitiativeState = {};
+type InitiativeAdminFormProps = {
+  initiative: Initiative;
+};
 
-export function InitiativeForm() {
+const initialState: UpdateInitiativeState = {};
+
+export function InitiativeAdminForm({ initiative }: InitiativeAdminFormProps) {
   const [state, formAction, isPending] = useActionState(
-    createInitiativeAction,
+    updateInitiativeAction,
     initialState,
   );
 
   return (
     <form action={formAction} className="flex w-full max-w-lg flex-col gap-4">
+      <input type="hidden" name="initiativeId" value={initiative.id} />
+
       <div className="flex flex-col gap-1">
         <label htmlFor="titulo" className="text-sm font-medium">
           Título
@@ -26,8 +35,8 @@ export function InitiativeForm() {
           name="titulo"
           required
           minLength={3}
+          defaultValue={initiative.titulo}
           className="border border-black bg-white px-3 py-2 text-sm"
-          placeholder="Ej. Recolección de alimentos"
         />
       </div>
 
@@ -41,8 +50,8 @@ export function InitiativeForm() {
           required
           minLength={10}
           rows={4}
+          defaultValue={initiative.descripcion}
           className="border border-black bg-white px-3 py-2 text-sm"
-          placeholder="Describe la iniciativa y cómo ayudar"
         />
       </div>
 
@@ -53,7 +62,7 @@ export function InitiativeForm() {
         <select
           id="status"
           name="status"
-          defaultValue="pending"
+          defaultValue={initiative.status}
           className="border border-black bg-white px-3 py-2 text-sm"
         >
           {Object.entries(INITIATIVE_STATUS_LABELS).map(([value, label]) => (
@@ -65,13 +74,16 @@ export function InitiativeForm() {
       </div>
 
       {state.error ? <p className="text-sm">{state.error}</p> : null}
+      {state.success ? (
+        <p className="text-sm">Cambios guardados correctamente.</p>
+      ) : null}
 
       <button
         type="submit"
         disabled={isPending}
         className="w-fit border border-black px-5 py-2 text-sm font-medium disabled:opacity-50"
       >
-        {isPending ? "Guardando..." : "Registrar iniciativa"}
+        {isPending ? "Guardando..." : "Guardar cambios"}
       </button>
     </form>
   );
