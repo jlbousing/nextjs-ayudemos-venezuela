@@ -31,6 +31,10 @@ type ProfileRow = {
   phone: string;
 };
 
+type InitiativeVolunteerRow = {
+  profiles: ProfileRow | ProfileRow[] | null;
+};
+
 type InitiativeRow = {
   id: string;
   title: string;
@@ -38,15 +42,29 @@ type InitiativeRow = {
   status: InitiativeStatus;
   created_by: string | null;
   created_at: string;
-  initiative_volunteers: Array<{ profiles: ProfileRow | null }> | null;
+  initiative_volunteers: InitiativeVolunteerRow[] | null;
 };
+
+function normalizeProfile(
+  profile: ProfileRow | ProfileRow[] | null | undefined,
+): ProfileRow | null {
+  if (!profile) {
+    return null;
+  }
+
+  if (Array.isArray(profile)) {
+    return profile[0] ?? null;
+  }
+
+  return profile;
+}
 
 function mapVolunteers(
   rows: InitiativeRow["initiative_volunteers"],
   includeContact: boolean,
 ): Voluntario[] {
   return (rows ?? [])
-    .map((row) => row.profiles)
+    .map((row) => normalizeProfile(row.profiles))
     .filter((profile): profile is ProfileRow => profile !== null)
     .map((profile) => ({
       id: profile.id,
@@ -54,6 +72,10 @@ function mapVolunteers(
       email: includeContact ? profile.email : "",
       telefono: includeContact ? profile.phone : "",
     }));
+}
+
+function toInitiativeRow(data: unknown): InitiativeRow {
+  return data as InitiativeRow;
 }
 
 function mapInitiative(row: InitiativeRow, includeContact: boolean): Initiative {
@@ -79,7 +101,7 @@ export async function getInitiatives(): Promise<Initiative[]> {
     throw new Error(error.message);
   }
 
-  return (data as InitiativeRow[]).map((row) => mapInitiative(row, false));
+  return data.map((row) => mapInitiative(toInitiativeRow(row), false));
 }
 
 export async function getInitiativeById(
@@ -101,7 +123,7 @@ export async function getInitiativeById(
     return null;
   }
 
-  return mapInitiative(data as InitiativeRow, includeContact);
+  return mapInitiative(toInitiativeRow(data), includeContact);
 }
 
 export async function getInitiativeForCreator(
@@ -137,7 +159,7 @@ export async function createInitiative(
     throw new Error(error.message);
   }
 
-  return mapInitiative(data as InitiativeRow, true);
+  return mapInitiative(toInitiativeRow(data), true);
 }
 
 export async function updateInitiative(
@@ -162,7 +184,7 @@ export async function updateInitiative(
     throw new Error(error.message);
   }
 
-  return mapInitiative(data as InitiativeRow, true);
+  return mapInitiative(toInitiativeRow(data), true);
 }
 
 export async function deleteInitiative(
