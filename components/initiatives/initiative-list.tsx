@@ -1,68 +1,78 @@
+import Link from "next/link";
 import {
   INITIATIVE_STATUS_LABELS,
   type Initiative,
 } from "@/lib/types/initiative";
+import { JoinVolunteerButton } from "@/components/initiatives/join-volunteer-button";
 
 type InitiativeListProps = {
   initiatives: Initiative[];
+  currentUserId?: string;
+  isAuthenticated: boolean;
 };
 
-const STATUS_STYLES = {
-  pending: "bg-amber-100 text-amber-800",
-  process: "bg-blue-100 text-blue-800",
-  completed: "bg-green-100 text-green-800",
-} as const;
-
-export function InitiativeList({ initiatives }: InitiativeListProps) {
+export function InitiativeList({
+  initiatives,
+  currentUserId,
+  isAuthenticated,
+}: InitiativeListProps) {
   if (initiatives.length === 0) {
-    return (
-      <p className="text-sm text-zinc-500">
-        Aún no hay iniciativas registradas.
-      </p>
-    );
+    return <p className="text-sm">Aún no hay iniciativas registradas.</p>;
   }
 
   return (
     <ul className="flex w-full max-w-2xl flex-col gap-4">
-      {initiatives.map((initiative) => (
-        <li
-          key={initiative.id}
-          className="rounded-lg border border-zinc-200 p-4"
-        >
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-lg font-semibold text-zinc-900">
-              {initiative.titulo}
-            </h2>
-            <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[initiative.status]}`}
-            >
-              {INITIATIVE_STATUS_LABELS[initiative.status]}
-            </span>
-          </div>
+      {initiatives.map((initiative) => {
+        const isJoined = initiative.voluntarios.some(
+          (voluntario) => voluntario.id === currentUserId,
+        );
 
-          <p className="mt-2 text-sm text-zinc-600">{initiative.descripcion}</p>
+        return (
+          <li key={initiative.id} className="border border-black p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-lg font-semibold">{initiative.titulo}</h2>
+              <span className="border border-black px-2 py-0.5 text-xs">
+                {INITIATIVE_STATUS_LABELS[initiative.status]}
+              </span>
+            </div>
 
-          <div className="mt-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Voluntarios ({initiative.voluntarios.length})
-            </p>
-            {initiative.voluntarios.length === 0 ? (
-              <p className="mt-1 text-sm text-zinc-500">
-                Sin voluntarios asignados.
+            <p className="mt-2 text-sm">{initiative.descripcion}</p>
+
+            <div className="mt-4">
+              <p className="text-xs font-medium uppercase tracking-wide">
+                Voluntarios ({initiative.voluntarios.length})
               </p>
-            ) : (
-              <ul className="mt-2 flex flex-col gap-1">
-                {initiative.voluntarios.map((voluntario) => (
-                  <li key={voluntario.id} className="text-sm text-zinc-700">
-                    {voluntario.nombre}{" "}
-                    <span className="text-zinc-400">({voluntario.email})</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </li>
-      ))}
+              {initiative.voluntarios.length === 0 ? (
+                <p className="mt-1 text-sm">Sin voluntarios asignados.</p>
+              ) : (
+                <ul className="mt-2 flex flex-col gap-1">
+                  {initiative.voluntarios.map((voluntario) => (
+                    <li key={voluntario.id} className="text-sm">
+                      {voluntario.nombre} ({voluntario.email})
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="mt-4 border-t border-black pt-4">
+              {isAuthenticated ? (
+                <JoinVolunteerButton
+                  initiativeId={initiative.id}
+                  isJoined={isJoined}
+                />
+              ) : (
+                <Link
+                  href="/iniciar-sesion?redirect=/iniciativas"
+                  className="text-sm underline"
+                >
+                  Inicia sesión para unirte como voluntario
+                </Link>
+              )}
+            </div>
+          </li>
+        );
+      })}
     </ul>
   );
 }

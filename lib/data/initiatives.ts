@@ -1,3 +1,4 @@
+import type { Voluntario } from "@/lib/types/user";
 import type { CreateInitiativeInput, Initiative } from "@/lib/types/initiative";
 
 // Capa de acceso a datos: usada por SSR (Server Components) y Route Handlers.
@@ -49,4 +50,26 @@ export async function createInitiative(
 
   initiatives.unshift(initiative);
   return initiative;
+}
+
+export async function joinInitiativeAsVolunteer(
+  initiativeId: string,
+  voluntario: Voluntario,
+): Promise<{ joined: boolean; alreadyJoined: boolean }> {
+  const initiative = initiatives.find((item) => item.id === initiativeId);
+
+  if (!initiative) {
+    throw new Error("Iniciativa no encontrada.");
+  }
+
+  const alreadyJoined = initiative.voluntarios.some(
+    (item) => item.id === voluntario.id,
+  );
+
+  if (alreadyJoined) {
+    return { joined: false, alreadyJoined: true };
+  }
+
+  initiative.voluntarios.push(voluntario);
+  return { joined: true, alreadyJoined: false };
 }
