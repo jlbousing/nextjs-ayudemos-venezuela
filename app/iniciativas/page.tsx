@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { ButtonLink, EmptyState } from "@/components/ui/form";
+import { PageHeader, PageShell, Section } from "@/components/ui/layout";
 import { InitiativeForm } from "@/components/initiatives/initiative-form";
 import { InitiativeList } from "@/components/initiatives/initiative-list";
 import { getCurrentProfile } from "@/lib/auth/session";
@@ -13,41 +14,46 @@ export default async function IniciativasPage() {
   const isAuthenticated = Boolean(profile);
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-10 px-6 py-16">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold">Iniciativas</h1>
-        <p className="text-sm">
-          {isAuthenticated
+    <PageShell>
+      <PageHeader
+        title="Iniciativas"
+        description={
+          isAuthenticated
             ? `Hola, ${profile?.name}. Puedes registrar iniciativas o unirte como voluntario.`
-            : "Inicia sesión para registrar iniciativas o unirte como voluntario."}
-        </p>
-      </header>
+            : "Inicia sesión para registrar iniciativas o unirte como voluntario."
+        }
+      />
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-xl font-medium">Activas</h2>
-        <InitiativeList
-          initiatives={initiatives}
-          currentUserId={profile?.id}
-          isAuthenticated={isAuthenticated}
-        />
-      </section>
+      <Section title="Activas" description="Iniciativas disponibles para apoyar.">
+        {initiatives.length === 0 ? (
+          <EmptyState>Aún no hay iniciativas registradas.</EmptyState>
+        ) : (
+          <InitiativeList
+            initiatives={initiatives}
+            currentUserId={profile?.id}
+            isAuthenticated={isAuthenticated}
+          />
+        )}
+      </Section>
 
-      <section className="flex flex-col gap-4 border-t border-black pt-10">
-        <h2 className="text-xl font-medium">Nueva iniciativa</h2>
+      <Section
+        title="Nueva iniciativa"
+        description="Publica una iniciativa para convocar ayuda y voluntarios."
+        bordered
+      >
         {isAuthenticated ? (
           <InitiativeForm />
         ) : (
-          <div className="flex flex-col gap-2 text-sm">
-            <p>Debes iniciar sesión para registrar una iniciativa.</p>
-            <Link
-              href="/iniciar-sesion?redirect=/iniciativas"
-              className="w-fit border border-black px-5 py-2"
-            >
+          <div className="flex flex-col gap-4">
+            <p className="text-sm text-neutral-600">
+              Debes iniciar sesión para registrar una iniciativa.
+            </p>
+            <ButtonLink href="/iniciar-sesion?redirect=/iniciativas">
               Iniciar sesión
-            </Link>
+            </ButtonLink>
           </div>
         )}
-      </section>
-    </div>
+      </Section>
+    </PageShell>
   );
 }

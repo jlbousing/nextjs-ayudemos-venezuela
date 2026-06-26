@@ -4,6 +4,8 @@ import {
   type Initiative,
 } from "@/lib/types/initiative";
 import { JoinVolunteerButton } from "@/components/initiatives/join-volunteer-button";
+import { Badge, Card, Divider } from "@/components/ui/layout";
+import { ButtonLink } from "@/components/ui/form";
 
 type InitiativeListProps = {
   initiatives: Initiative[];
@@ -16,12 +18,8 @@ export function InitiativeList({
   currentUserId,
   isAuthenticated,
 }: InitiativeListProps) {
-  if (initiatives.length === 0) {
-    return <p className="text-sm">Aún no hay iniciativas registradas.</p>;
-  }
-
   return (
-    <ul className="flex w-full max-w-2xl flex-col gap-4">
+    <ul className="flex flex-col gap-4">
       {initiatives.map((initiative) => {
         const isCreator = initiative.createdBy === currentUserId;
         const isJoined = initiative.voluntarios.some(
@@ -29,59 +27,68 @@ export function InitiativeList({
         );
 
         return (
-          <li key={initiative.id} className="border border-black p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-lg font-semibold">{initiative.titulo}</h2>
-              <span className="border border-black px-2 py-0.5 text-xs">
-                {INITIATIVE_STATUS_LABELS[initiative.status]}
-              </span>
-            </div>
+          <li key={initiative.id}>
+            <Card className="flex flex-col gap-5">
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-lg font-semibold text-neutral-900">
+                    {initiative.titulo}
+                  </h2>
+                  <Badge>{INITIATIVE_STATUS_LABELS[initiative.status]}</Badge>
+                </div>
+                <p className="text-sm leading-6 text-neutral-600">
+                  {initiative.descripcion}
+                </p>
+              </div>
 
-            <p className="mt-2 text-sm">{initiative.descripcion}</p>
+              <Divider />
 
-            <div className="mt-4">
-              <p className="text-xs font-medium uppercase tracking-wide">
-                Voluntarios ({initiative.voluntarios.length})
-              </p>
-              {initiative.voluntarios.length === 0 ? (
-                <p className="mt-1 text-sm">Sin voluntarios asignados.</p>
-              ) : (
-                <ul className="mt-2 flex flex-col gap-1">
-                  {initiative.voluntarios.map((voluntario) => (
-                    <li key={voluntario.id} className="text-sm">
-                      {voluntario.nombre}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-black pt-4">
-              {isCreator ? (
-                <Link
-                  href={`/iniciativas/${initiative.id}/admin`}
-                  className="border border-black px-4 py-1.5 text-sm"
-                >
-                  Administrar
-                </Link>
-              ) : null}
-
-              {!isCreator ? (
-                isAuthenticated ? (
-                  <JoinVolunteerButton
-                    initiativeId={initiative.id}
-                    isJoined={isJoined}
-                  />
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  Voluntarios ({initiative.voluntarios.length})
+                </p>
+                {initiative.voluntarios.length === 0 ? (
+                  <p className="mt-2 text-sm text-neutral-500">
+                    Sin voluntarios inscritos todavía.
+                  </p>
                 ) : (
-                  <Link
-                    href="/iniciar-sesion?redirect=/iniciativas"
-                    className="text-sm underline"
-                  >
-                    Inicia sesión para unirte como voluntario
-                  </Link>
-                )
-              ) : null}
-            </div>
+                  <ul className="mt-3 flex flex-wrap gap-2">
+                    {initiative.voluntarios.map((voluntario) => (
+                      <li
+                        key={voluntario.id}
+                        className="rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs text-neutral-700"
+                      >
+                        {voluntario.nombre}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                {isCreator ? (
+                  <ButtonLink href={`/iniciativas/${initiative.id}/admin`}>
+                    Administrar
+                  </ButtonLink>
+                ) : null}
+
+                {!isCreator ? (
+                  isAuthenticated ? (
+                    <JoinVolunteerButton
+                      initiativeId={initiative.id}
+                      isJoined={isJoined}
+                    />
+                  ) : (
+                    <Link
+                      href="/iniciar-sesion?redirect=/iniciativas"
+                      className="text-sm text-neutral-600 underline decoration-neutral-300 underline-offset-4 hover:text-neutral-900"
+                    >
+                      Inicia sesión para unirte
+                    </Link>
+                  )
+                ) : null}
+              </div>
+            </Card>
           </li>
         );
       })}

@@ -5,6 +5,7 @@ import {
   joinVolunteerAction,
   type JoinVolunteerState,
 } from "@/lib/actions/initiatives";
+import { Button, FormMessage } from "@/components/ui/form";
 
 type JoinVolunteerButtonProps = {
   initiativeId: string;
@@ -23,24 +24,26 @@ export function JoinVolunteerButton({
   );
 
   if (isJoined || state.alreadyJoined) {
-    return <p className="text-sm">Ya estás inscrito como voluntario.</p>;
+    return (
+      <span className="rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-sm text-neutral-700">
+        Ya estás inscrito
+      </span>
+    );
   }
 
   if (state.success) {
-    return <p className="text-sm">Te uniste como voluntario.</p>;
+    return (
+      <FormMessage tone="success">Te uniste como voluntario.</FormMessage>
+    );
   }
 
   return (
-    <form action={formAction}>
+    <form action={formAction} className="flex flex-col gap-2">
       <input type="hidden" name="initiativeId" value={initiativeId} />
-      {state.error ? <p className="mb-2 text-sm">{state.error}</p> : null}
-      <button
-        type="submit"
-        disabled={isPending}
-        className="border border-black px-4 py-1.5 text-sm disabled:opacity-50"
-      >
+      {state.error ? <FormMessage tone="error">{state.error}</FormMessage> : null}
+      <Button type="submit" variant="secondary" disabled={isPending}>
         {isPending ? "Uniendo..." : "Unirme como voluntario"}
-      </button>
+      </Button>
     </form>
   );
 }

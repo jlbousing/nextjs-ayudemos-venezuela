@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ProfileForm } from "@/components/profile/profile-form";
+import { PageHeader, PageShell } from "@/components/ui/layout";
 import { getCurrentProfile } from "@/lib/auth/session";
 
 export default async function ProfilePage() {
@@ -11,19 +11,15 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-lg flex-col gap-8 px-6 py-16">
-      <header className="flex flex-col gap-3">
-        <Link href="/iniciativas" className="text-sm underline">
-          ← Volver a iniciativas
-        </Link>
-        <h1 className="text-3xl font-semibold">Mi perfil</h1>
-        <p className="text-sm">
-          Actualiza tu nombre y teléfono. Los organizadores de iniciativas
-          usan estos datos para contactarte como voluntario.
-        </p>
-      </header>
+    <PageShell size="narrow">
+      <PageHeader
+        backHref="/iniciativas"
+        backLabel="Volver a iniciativas"
+        title="Mi perfil"
+        description="Actualiza tu nombre y teléfono. Los organizadores de iniciativas usan estos datos para contactarte como voluntario."
+      />
 
       <ProfileForm profile={profile} />
-    </div>
+    </PageShell>
   );
 }

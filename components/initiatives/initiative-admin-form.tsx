@@ -9,6 +9,15 @@ import {
   INITIATIVE_STATUS_LABELS,
   type Initiative,
 } from "@/lib/types/initiative";
+import {
+  Button,
+  Field,
+  FormMessage,
+  Input,
+  Select,
+  Textarea,
+} from "@/components/ui/form";
+import { Card } from "@/components/ui/layout";
 
 type InitiativeAdminFormProps = {
   initiative: Initiative;
@@ -23,68 +32,50 @@ export function InitiativeAdminForm({ initiative }: InitiativeAdminFormProps) {
   );
 
   return (
-    <form action={formAction} className="flex w-full max-w-lg flex-col gap-4">
-      <input type="hidden" name="initiativeId" value={initiative.id} />
+    <Card>
+      <form action={formAction} className="flex flex-col gap-5">
+        <input type="hidden" name="initiativeId" value={initiative.id} />
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="titulo" className="text-sm font-medium">
-          Título
-        </label>
-        <input
-          id="titulo"
-          name="titulo"
-          required
-          minLength={3}
-          defaultValue={initiative.titulo}
-          className="border border-black bg-white px-3 py-2 text-sm"
-        />
-      </div>
+        <Field label="Título" htmlFor="titulo">
+          <Input
+            id="titulo"
+            name="titulo"
+            required
+            minLength={3}
+            defaultValue={initiative.titulo}
+          />
+        </Field>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="descripcion" className="text-sm font-medium">
-          Descripción
-        </label>
-        <textarea
-          id="descripcion"
-          name="descripcion"
-          required
-          minLength={10}
-          rows={4}
-          defaultValue={initiative.descripcion}
-          className="border border-black bg-white px-3 py-2 text-sm"
-        />
-      </div>
+        <Field label="Descripción" htmlFor="descripcion">
+          <Textarea
+            id="descripcion"
+            name="descripcion"
+            required
+            minLength={10}
+            rows={4}
+            defaultValue={initiative.descripcion}
+          />
+        </Field>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="status" className="text-sm font-medium">
-          Estado
-        </label>
-        <select
-          id="status"
-          name="status"
-          defaultValue={initiative.status}
-          className="border border-black bg-white px-3 py-2 text-sm"
-        >
-          {Object.entries(INITIATIVE_STATUS_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </div>
+        <Field label="Estado" htmlFor="status">
+          <Select id="status" name="status" defaultValue={initiative.status}>
+            {Object.entries(INITIATIVE_STATUS_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </Select>
+        </Field>
 
-      {state.error ? <p className="text-sm">{state.error}</p> : null}
-      {state.success ? (
-        <p className="text-sm">Cambios guardados correctamente.</p>
-      ) : null}
+        {state.error ? <FormMessage tone="error">{state.error}</FormMessage> : null}
+        {state.success ? (
+          <FormMessage tone="success">Cambios guardados correctamente.</FormMessage>
+        ) : null}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="w-fit border border-black px-5 py-2 text-sm font-medium disabled:opacity-50"
-      >
-        {isPending ? "Guardando..." : "Guardar cambios"}
-      </button>
-    </form>
+        <Button type="submit" disabled={isPending}>
+          {isPending ? "Guardando..." : "Guardar cambios"}
+        </Button>
+      </form>
+    </Card>
   );
 }

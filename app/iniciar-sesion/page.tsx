@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/login-form";
 import { SignupForm } from "@/components/auth/signup-form";
+import { FormMessage } from "@/components/ui/form";
+import { PageHeader, PageShell } from "@/components/ui/layout";
 import { getSessionUser } from "@/lib/auth/session";
 
 type LoginPageProps = {
@@ -23,30 +24,25 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-lg flex-col gap-8 px-6 py-16">
-      <header className="flex flex-col gap-3">
-        <Link href="/" className="text-sm underline">
-          ← Volver al inicio
-        </Link>
-        <h1 className="text-3xl font-semibold">
-          {isSignup ? "Crear cuenta" : "Iniciar sesión"}
-        </h1>
-        <p className="text-sm leading-6">
-          Inicia sesión para registrar iniciativas de ayuda o unirte como
-          voluntario a las que ya están activas.
-        </p>
-        {params.error === "auth" ? (
-          <p className="text-sm">
-            No se pudo completar la autenticación. Intenta de nuevo.
-          </p>
-        ) : null}
-      </header>
+    <PageShell size="narrow">
+      <PageHeader
+        backHref="/"
+        backLabel="Volver al inicio"
+        title={isSignup ? "Crear cuenta" : "Iniciar sesión"}
+        description="Inicia sesión para registrar iniciativas de ayuda o unirte como voluntario a las que ya están activas."
+      />
+
+      {params.error === "auth" ? (
+        <FormMessage tone="error">
+          No se pudo completar la autenticación. Intenta de nuevo.
+        </FormMessage>
+      ) : null}
 
       {isSignup ? (
         <SignupForm key="signup" redirectTo={redirectTo} />
       ) : (
         <LoginForm key="login" redirectTo={redirectTo} />
       )}
-    </div>
+    </PageShell>
   );
 }

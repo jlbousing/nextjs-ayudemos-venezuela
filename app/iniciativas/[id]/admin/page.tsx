@@ -1,8 +1,9 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { InitiativeAdminForm } from "@/components/initiatives/initiative-admin-form";
 import { DeleteInitiativeButton } from "@/components/initiatives/delete-initiative-button";
 import { VolunteersContactList } from "@/components/initiatives/volunteers-contact-list";
+import { FormMessage } from "@/components/ui/form";
+import { Badge, PageHeader, PageShell, Section } from "@/components/ui/layout";
 import { getCurrentProfile } from "@/lib/auth/session";
 import { getInitiativeForCreator } from "@/lib/data/initiatives";
 import { INITIATIVE_STATUS_LABELS } from "@/lib/types/initiative";
@@ -31,50 +32,39 @@ export default async function InitiativeAdminPage({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-10 px-6 py-16">
-      <header className="flex flex-col gap-3">
-        <Link href="/iniciativas" className="text-sm underline">
-          ← Volver a iniciativas
-        </Link>
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-3xl font-semibold">{initiative.titulo}</h1>
-          <span className="border border-black px-2 py-0.5 text-xs">
-            {INITIATIVE_STATUS_LABELS[initiative.status]}
-          </span>
-        </div>
-        <p className="text-sm">Administra tu iniciativa y contacta a los voluntarios.</p>
-      </header>
+    <PageShell>
+      <PageHeader
+        backHref="/iniciativas"
+        backLabel="Volver a iniciativas"
+        title={initiative.titulo}
+        description="Administra tu iniciativa y contacta a los voluntarios."
+        badge={<Badge>{INITIATIVE_STATUS_LABELS[initiative.status]}</Badge>}
+      />
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-xl font-medium">Editar iniciativa</h2>
+      <Section title="Editar iniciativa">
         <InitiativeAdminForm initiative={initiative} />
-      </section>
+      </Section>
 
-      <section className="flex flex-col gap-4 border-t border-black pt-10">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-xl font-medium">
-            Voluntarios ({initiative.voluntarios.length})
-          </h2>
-          <p className="text-sm">
-            Datos de contacto para coordinar la ayuda con tu equipo.
-          </p>
-        </div>
+      <Section
+        title={`Voluntarios (${initiative.voluntarios.length})`}
+        description="Datos de contacto para coordinar la ayuda con tu equipo."
+        bordered
+      >
         <VolunteersContactList voluntarios={initiative.voluntarios} />
-      </section>
+      </Section>
 
-      <section className="flex flex-col gap-4 border-t border-black pt-10">
-        <h2 className="text-xl font-medium">Zona de peligro</h2>
+      <Section
+        title="Zona de peligro"
+        description="Al eliminar la iniciativa se borrarán también los voluntarios inscritos."
+        bordered
+      >
         {error === "delete" ? (
-          <p className="text-sm">
+          <FormMessage tone="error">
             No se pudo eliminar la iniciativa. Intenta de nuevo.
-          </p>
+          </FormMessage>
         ) : null}
-        <p className="text-sm">
-          Al eliminar la iniciativa se borrarán también los voluntarios
-          inscritos.
-        </p>
         <DeleteInitiativeButton initiativeId={initiative.id} />
-      </section>
-    </div>
+      </Section>
+    </PageShell>
   );
 }

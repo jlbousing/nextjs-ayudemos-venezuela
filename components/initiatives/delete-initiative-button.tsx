@@ -1,6 +1,7 @@
 "use client";
 
 import { deleteInitiativeAction } from "@/lib/actions/initiatives";
+import { Button } from "@/components/ui/form";
 
 type DeleteInitiativeButtonProps = {
   initiativeId: string;
@@ -12,9 +13,9 @@ export function DeleteInitiativeButton({
   return (
     <form action={deleteInitiativeAction}>
       <input type="hidden" name="initiativeId" value={initiativeId} />
-      <button
+      <Button
         type="submit"
-        className="border border-black px-5 py-2 text-sm font-medium"
+        variant="danger"
         onClick={(event) => {
           const confirmed = window.confirm(
             "¿Eliminar esta iniciativa? También se quitarán las inscripciones de voluntarios. Esta acción no se puede deshacer.",
@@ -26,7 +27,7 @@ export function DeleteInitiativeButton({
         }}
       >
         Eliminar iniciativa
-      </button>
+      </Button>
     </form>
   );
 }
