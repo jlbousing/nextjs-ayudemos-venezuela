@@ -15,7 +15,7 @@ export async function sendEmail({ to, subject, html }: SendEmailInput) {
   }
 
   const from =
-    process.env.EMAIL_FROM ?? "Ayudemos Venezuela <onboarding@resend.dev>";
+    process.env.EMAIL_FROM ?? "Ayudemos Venezuela <hola@ayudemos-venezuela.com>";
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
