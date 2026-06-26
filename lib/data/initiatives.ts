@@ -6,8 +6,21 @@ import type { CreateInitiativeInput, Initiative } from "@/lib/types/initiative";
 const initiatives: Initiative[] = [
   {
     id: "1",
-    title: "Recolección de medicinas",
-    description: "Punto de acopio en Caracas para insumos médicos básicos.",
+    titulo: "Recolección de medicinas",
+    descripcion: "Punto de acopio en Caracas para insumos médicos básicos.",
+    status: "process",
+    voluntarios: [
+      {
+        id: "v1",
+        nombre: "María González",
+        email: "maria@ejemplo.com",
+      },
+      {
+        id: "v2",
+        nombre: "Carlos Pérez",
+        email: "carlos@ejemplo.com",
+      },
+    ],
     createdAt: new Date().toISOString(),
   },
 ];
@@ -27,8 +40,10 @@ export async function createInitiative(
 ): Promise<Initiative> {
   const initiative: Initiative = {
     id: crypto.randomUUID(),
-    title: input.title.trim(),
-    description: input.description.trim(),
+    titulo: input.titulo.trim(),
+    descripcion: input.descripcion.trim(),
+    status: input.status ?? "pending",
+    voluntarios: input.voluntarios ?? [],
     createdAt: new Date().toISOString(),
   };
 
