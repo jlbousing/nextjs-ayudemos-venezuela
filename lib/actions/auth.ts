@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { mapSignupError } from "@/lib/auth/errors";
 import { buildAuthCallbackUrl } from "@/lib/config/app-url";
 import { createClient } from "@/lib/supabase/server";
 import { isValidPhone } from "@/lib/validations/phone";
@@ -108,7 +109,7 @@ export async function signupAction(
   });
 
   if (error) {
-    return { error: error.message };
+    return { error: mapSignupError(error.message) };
   }
 
   if (data.session) {
