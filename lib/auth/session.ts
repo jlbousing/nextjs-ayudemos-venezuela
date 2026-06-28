@@ -10,27 +10,39 @@ export async function getSessionUser() {
 }
 
 export async function getCurrentProfile() {
-  const user = await getSessionUser();
-
-  if (!user) {
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
     return null;
   }
 
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("profiles")
-    .select("id, name, email, phone")
-    .eq("id", user.id)
-    .single();
+  try {
+    const user = await getSessionUser();
 
-  if (data) {
-    return data;
+    if (!user) {
+      return null;
+    }
+
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, name, email, phone")
+      .eq("id", user.id)
+      .single();
+
+    if (data) {
+      return data;
+    }
+
+    return {
+      id: user.id,
+      name: (user.user_metadata?.name as string | undefined) ?? user.email ?? "",
+      email: user.email ?? "",
+      phone: (user.user_metadata?.phone as string | undefined) ?? "",
+    };
+  } catch (error) {
+    console.error("[getCurrentProfile]", error);
+    return null;
   }
-
-  return {
-    id: user.id,
-    name: (user.user_metadata?.name as string | undefined) ?? user.email ?? "",
-    email: user.email ?? "",
-    phone: (user.user_metadata?.phone as string | undefined) ?? "",
-  };
 }

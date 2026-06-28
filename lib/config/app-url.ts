@@ -20,10 +20,14 @@ function isLocalhost(url: string) {
   }
 }
 
+function isAmplifyRuntime() {
+  return Boolean(process.env.AWS_APP_ID);
+}
+
 function isProductionRuntime() {
   return (
     process.env.NODE_ENV === "production" ||
-    process.env.NETLIFY === "true" ||
+    isAmplifyRuntime() ||
     Boolean(process.env.VERCEL)
   );
 }
@@ -31,12 +35,8 @@ function isProductionRuntime() {
 function getProductionCandidates() {
   const candidates: string[] = [];
 
-  if (process.env.URL) {
-    candidates.push(process.env.URL);
-  }
-
-  if (process.env.DEPLOY_PRIME_URL) {
-    candidates.push(process.env.DEPLOY_PRIME_URL);
+  if (process.env.APP_URL) {
+    candidates.push(process.env.APP_URL);
   }
 
   if (process.env.VERCEL_URL) {
@@ -80,8 +80,8 @@ export async function getAppUrl() {
     }
   }
 
-  if (!production && process.env.URL) {
-    return normalizeAppUrl(process.env.URL);
+  if (!production && process.env.APP_URL) {
+    return normalizeAppUrl(process.env.APP_URL);
   }
 
   return "http://localhost:3000";
