@@ -98,6 +98,52 @@ export type Database = {
           },
         ];
       };
+      talent_profiles: {
+        Row: {
+          id: string;
+          profession: string;
+          experience: string;
+          description: string;
+          previous_workplace: string;
+          skills: string;
+          linkedin_url: string | null;
+          social_links: string | null;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          profession: string;
+          experience: string;
+          description: string;
+          previous_workplace: string;
+          skills: string;
+          linkedin_url?: string | null;
+          social_links?: string | null;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          profession?: string;
+          experience?: string;
+          description?: string;
+          previous_workplace?: string;
+          skills?: string;
+          linkedin_url?: string | null;
+          social_links?: string | null;
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "talent_profiles_created_by_fkey";
+            columns: ["created_by"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

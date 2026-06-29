@@ -24,6 +24,12 @@ export async function SiteHeader() {
             Iniciativas
           </Link>
           <Link
+            href="/reubicacion-talento"
+            className="rounded-lg px-3 py-2 text-neutral-700 transition-colors hover:bg-neutral-50 hover:text-neutral-900"
+          >
+            Talento
+          </Link>
+          <Link
             href="/enlaces-de-interes"
             className="rounded-lg px-3 py-2 text-neutral-700 transition-colors hover:bg-neutral-50 hover:text-neutral-900"
           >

@@ -22,6 +22,9 @@ export default function Home() {
           <ButtonLink href="/iniciativas" variant="primary">
             Ver iniciativas
           </ButtonLink>
+          <ButtonLink href="/reubicacion-talento" variant="secondary">
+            Reubicación de talento
+          </ButtonLink>
           <ButtonLink href="/iniciar-sesion" variant="secondary">
             Iniciar sesión
           </ButtonLink>
